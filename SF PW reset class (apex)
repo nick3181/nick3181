@@ -1,0 +1,23 @@
+public class PasswordResetEmailSender {
+    @InvocableMethod(label='Reset Password and Send Reset Email' description='Resets the passwords and sends a password reset email to the specified user.' category='User')
+    public static List<User> sendPasswordResetEmail(List<Id>userIds) {
+        //determine whether current user is an Admin
+        Boolean isAdmin = false;
+        for(PermissionSetAssignment psa: [select PermissionSet.PermissionsModifyAllData from PermissionSetAssignment where AssigneeId =:UserInfo.getUserId()]){
+            isAdmin = true;
+        }
+        
+        //confirm that the Id is valid
+        List<User>users = [select Id from User where Id IN :userIds];
+        
+        //reset the password if the Id is valid and the current user is an Admin
+        Boolean sendUserEmail = true;
+        if (!users.isEmpty() && isAdmin) {
+            for (User user : users) {
+                System.ResetPasswordResult resetPWResult = System.resetPassword(user.Id,sendUserEmail);
+            }
+        }
+        return users;
+    }
+
+}
