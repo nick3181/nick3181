@@ -1,0 +1,123 @@
+
+Anand S (Preludesys)
+@isTest
+
+public class TestPasswordResetEmailSender {
+
+  @isTest
+
+  static void test_sendPasswordResetEmail() {
+
+    // create a test user
+
+    User testUser = new User(
+
+      LastName = 'Test',
+
+      Email = 'bam2431@gmail.com',
+
+      ProfileId = [SELECT Id FROM Profile WHERE Name='Standard User'].Id,
+
+      UserName = 'test3181@mng31example.com',
+
+      Alias = 'test',
+
+      TimeZoneSidKey = 'America/Los_Angeles',
+
+      LocaleSidKey = 'en_US',
+
+      EmailEncodingKey = 'UTF-8',
+
+      LanguageLocaleKey = 'en_US'
+
+    );
+
+    insert testUser;
+
+ 
+
+    // create a test admin user
+
+    User testAdmin = new User(
+
+      LastName = 'Test Admin',
+
+      Email = 'bam2431@gmail.com',
+
+      ProfileId = [SELECT Id FROM Profile WHERE Name='System Administrator'].Id,
+
+      UserName = 'testadmin1234@mng1234example.com',
+
+      Alias = 'test',
+
+      TimeZoneSidKey = 'America/Los_Angeles',
+
+      LocaleSidKey = 'en_US',
+
+      EmailEncodingKey = 'UTF-8',
+
+      LanguageLocaleKey = 'en_US'
+
+    );
+
+    insert testAdmin;
+
+ 
+
+    Test.startTest();
+
+ 
+
+    // test case: reset password and send email when user's Id is valid and current user is an Admin
+
+    System.runAs(testAdmin) {
+
+      List<Id> userIds = new List<Id>{testUser.Id};
+
+      List<User> expectedOutput = new List<User>{testUser};
+
+      List<User> result = PasswordResetEmailSender.sendPasswordResetEmail(userIds);
+
+      System.assertEquals(result, expectedOutput);
+
+    }
+
+ 
+
+    // test case: do not reset password and send email when user's Id is invalid
+
+    System.runAs(testAdmin) {
+
+      List<Id> userIds = new List<Id>{'invalidId'};
+
+      List<User> expectedOutput = new List<User>();
+
+      List<User> result = PasswordResetEmailSender.sendPasswordResetEmail(userIds);
+
+      System.assertEquals(result, expectedOutput);
+
+    }
+
+ 
+
+    // test case: do not reset password and send email when current user is not an Admin
+
+    System.runAs(testUser) {
+
+      List<Id> userIds = new List<Id>{testUser.Id};
+
+      List<User> expectedOutput = new List<User>();
+
+      List<User> result = PasswordResetEmailSender.sendPasswordResetEmail(userIds);
+
+      System.assertEquals(result, expectedOutput);
+
+    }
+
+ 
+
+    Test.stopTest();
+
+  }
+
+}
